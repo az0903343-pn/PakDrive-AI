@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import joblib
 from xgboost import XGBClassifier
-from tensorflow.keras.models import load_model
 from duckduckgo_search import DDGS
 
 # ==========================================
@@ -47,7 +46,7 @@ st.markdown("""
     
     .showroom-hero {
         background: radial-gradient(circle at 50% 20%, #1e293b 0%, #090d16 100%);
-        padding: 48px 30px;
+        padding: 45px 30px;
         border-radius: 22px;
         text-align: center;
         box-shadow: 0 18px 40px rgba(9, 13, 22, 0.3);
@@ -166,7 +165,34 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. VERIFIED VEHICLE IMAGES & MARKET LINKS
+# 3. LUXURY NAVBAR & HERO SECTION (RENDERS INSTANTLY)
+# ==========================================
+st.markdown("""
+<div class="lux-navbar">
+    <div class="lux-brand">🚘 PakDrive AI <span style="font-size:13px; color:#475569;">| LUXURY 3D SHOWROOM</span></div>
+    <div style="font-size:14px; font-weight:600; color:#0f172a;">Cycle to Helicopter • Live PakWheels API • Maryam Nawaz E-Bike Scheme</div>
+</div>
+
+<div class="showroom-hero">
+    <div class="showroom-title">EXPERIENCE LUXURY & SMART MOBILITY</div>
+    <div class="showroom-sub">
+        Apna budget darj karein — Hamara AI aapke budget ki exact range mein behtareen sawari, 3D Showroom Tour, Live Market Links, aur Punjab Govt Scheme ki mukammal tafseel dikhayega.
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 4. USER INPUT PANEL (RENDERS IMMEDIATELY!)
+# ==========================================
+st.markdown("### 🔍 Apna Budget Aur Zaroorat Select Karein")
+c1, c2, c3, c4 = st.columns(4)
+budget = c1.number_input("Aapka Budget (PKR)", min_value=15000, max_value=1500000000, value=160000, step=10000)
+daily_km = c2.slider("Rozana ka Safar (KM)", min_value=2, max_value=500, value=35)
+fuel_pref = c3.selectbox("Fuel / Power Type", ["Any (Show Best in Budget)", "Electric", "Petrol", "Manual", "Diesel", "Aviation Fuel"])
+usage_type = c4.selectbox("Istemaal (Purpose)", ["Personal", "Family", "Commercial", "Luxury/Offroad", "Marine/Leisure", "Aviation"])
+
+# ==========================================
+# 5. FAST MODEL & DATASET LOADING (NO TENSORFLOW HANG)
 # ==========================================
 VEHICLE_MEDIA = {
     "1_Bicycle": {
@@ -219,11 +245,8 @@ VEHICLE_MEDIA = {
     }
 }
 
-# ==========================================
-# 4. LOAD MODELS & DATASET
-# ==========================================
 @st.cache_resource
-def load_assets():
+def load_fast_models():
     df = pd.read_csv("vehicles_3d_master.csv")
     scaler = joblib.load("scaler.pkl")
     le_fuel = joblib.load("le_fuel.pkl")
@@ -231,38 +254,7 @@ def load_assets():
     le_target = joblib.load("le_target.pkl")
     xgb_model = XGBClassifier()
     xgb_model.load_model("xgb_vehicle_model.json")
-    dl_model = load_model("dl_vehicle_model.h5", compile=False)
-    return df, scaler, le_fuel, le_usage, le_target, xgb_model, dl_model
+    return df, scaler, le_fuel, le_usage, le_target, xgb_model
 
-df, scaler, le_fuel, le_usage, le_target, xgb_model, dl_model = load_assets()
+df, scaler, le_fuel, le_usage, le_target, xgb_model = load_fast_models()
 
-@st.cache_data(ttl=1800)
-def fetch_live_market_data(query):
-    try:
-        with DDGS() as ddgs:
-            return list(ddgs.text(query, max_results=3))
-    except Exception:
-        return []
-
-# ==========================================
-# 5. LUXURY NAVBAR & HERO SECTION
-# ==========================================
-st.markdown("""
-<div class="lux-navbar">
-    <div class="lux-brand">🚘 PakDrive AI <span style="font-size:13px; color:#475569;">| LUXURY 3D SHOWROOM</span></div>
-    <div style="font-size:14px; font-weight:600; color:#0f172a;">Cycle to Helicopter • Live PakWheels API • Maryam Nawaz E-Bike Scheme</div>
-</div>
-
-<div class="showroom-hero">
-    <div class="showroom-title">EXPERIENCE LUXURY & SMART MOBILITY</div>
-    <div class="showroom-sub">
-        Apna budget darj karein — Hamara Deep Learning aur XGBoost AI aapke budget ki exact range mein behtareen sawari, 3D Showroom Tour, Live Market Links, aur Punjab Govt Scheme ki mukammal tafseel dikhayega.
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# ==========================================
-# 6. USER INPUT PANEL (NO INDENTATION BLOCKS!)
-# ==========================================
-st.markdown("### 🔍 Apna Budget Aur Zaroorat Select Karein")
-c1, c2, c3, c4 = st.columns(4)
