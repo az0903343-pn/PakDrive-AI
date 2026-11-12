@@ -32,7 +32,6 @@ st.markdown("""
         color: #f8fafc !important;
     }
     
-    /* Luxury Glass Navbar */
     .pro-navbar {
         background: rgba(17, 24, 39, 0.85);
         backdrop-filter: blur(16px);
@@ -53,7 +52,6 @@ st.markdown("""
         -webkit-text-fill-color: transparent;
     }
     
-    /* Ultra-Pro Hero Section */
     .pro-hero {
         background: linear-gradient(135deg, #064e3b 0%, #0f172a 55%, #1e1b4b 100%);
         padding: 55px 35px;
@@ -79,7 +77,6 @@ st.markdown("""
         line-height: 1.6;
     }
     
-    /* Ultra-Pro 3D Vehicle Card */
     .pro-card {
         background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
         border-radius: 22px;
@@ -136,7 +133,6 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* 3D Rotating Video Stage */
     .stage-3d-box {
         background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
         border-radius: 22px;
@@ -159,7 +155,6 @@ st.markdown("""
         filter: drop-shadow(0 22px 28px rgba(16, 185, 129, 0.45));
     }
     
-    /* Superior University Style Floating Corner Chatbot */
     div[data-testid="stPopover"] {
         position: fixed;
         bottom: 24px;
@@ -207,7 +202,7 @@ fuel_pref = c3.selectbox("Fuel / Power Type", ["Any (Show Best in Budget)", "Ele
 usage_type = c4.selectbox("Istemaal (Purpose)", ["Personal", "Family", "Commercial", "Luxury/Offroad", "Marine/Leisure", "Aviation"])
 
 # ==========================================
-# 5. BUILT-IN MASTER CATALOG + SAFE KAGGLE MODEL LOADER
+# 5. BUILT-IN MASTER CATALOG
 # ==========================================
 CATALOG = [
     {
@@ -263,3 +258,10 @@ CATALOG = [
         "Link": "https://pakwheels.com"
     },
     {
+        "Model_Name": "Sazgar Electric Rickshaw",
+        "Category": "Three Wheeler",
+        "Fuel_Type": "Electric",
+        "Price_PKR": 550000,
+        "Running_Cost": 350,
+        "Range_KM": 100,
+        "Govt_Scheme": "Yes (Green Transport Subsidy)",
