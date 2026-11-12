@@ -201,28 +201,28 @@ with c4:
 st.button("🚀 Show 3D Vehicles, Rates & Comparison", use_container_width=True, type="primary")
 
 # ==========================================
-# ML & DL PREDICTION
+# ML & DL PREDICTION (FIXED SCALAR EXTRACTION)
 # ==========================================
 selected_fuel = "Electric" if fuel_pref == "Any (Show All)" else fuel_pref
 if selected_fuel not in le_fuel.classes_:
-    selected_fuel = le_fuel.classes_
+    selected_fuel = str(le_fuel.classes_[0])
 if usage_type not in le_usage.classes_:
-    usage_type = le_usage.classes_
+    usage_type = str(le_usage.classes_[0])
 
-fuel_enc = le_fuel.transform([selected_fuel])
-usage_enc = le_usage.transform([usage_type])
+fuel_enc = int(le_fuel.transform([selected_fuel]).item())
+usage_enc = int(le_usage.transform([usage_type]).item())
 passengers = 1 if budget < 150000 else (2 if budget < 500000 else 5)
 
-input_data = np.array([[np.log1p(budget), daily_km, passengers, fuel_enc, usage_enc]])
+input_data = np.array([[float(np.log1p(budget)), float(daily_km), float(passengers), float(fuel_enc), float(usage_enc)]], dtype=np.float32)
 input_scaled = scaler.transform(input_data)
 
-dl_probs = dl_model.predict(input_scaled, verbose=0)
+dl_probs = dl_model.predict(input_scaled, verbose=0)[0]
 dl_pred_idx = int(np.argmax(dl_probs))
 dl_confidence = float(dl_probs[dl_pred_idx] * 100)
-predicted_category = str(le_target.inverse_transform([dl_pred_idx])).split('_', 1)[-1]
+predicted_category = str(le_target.inverse_transform([dl_pred_idx]).item()).split('_', 1)[-1]
 
-xgb_pred_idx = int(xgb_model.predict(input_scaled))
-xgb_category = str(le_target.inverse_transform([xgb_pred_idx])).split('_', 1)[-1]
+xgb_pred_idx = int(xgb_model.predict(input_scaled).item())
+xgb_category = str(le_target.inverse_transform([xgb_pred_idx]).item()).split('_', 1)[-1]
 
 st.success(f"🧠 **Deep Learning Prediction:** `{predicted_category}` (Confidence: **{dl_confidence:.1f}%**)  |  🚀 **XGBoost ML Prediction:** `{xgb_category}`")
 
@@ -238,12 +238,12 @@ else:
     filtered = unique_vehicles.copy()
 
 filtered["Price_Diff"] = abs(filtered["Price_PKR"] - budget)
-matched_df = filtered.sort_values("Price_Diff").head(4)
+matched_df = filtered.sort_values("Price_Diff").head(4).reset_index(drop=True)
 
 st.markdown("### 🏆 Aapke Budget Ke Mutabiq 3D Vehicles & Latest Rates")
 cols = st.columns(len(matched_df))
 
-for idx, (_, row) in enumerate(matched_df.iterrows()):
+for idx, row in matched_df.iterrows():
     with cols[idx]:
         scheme_text = str(row["Govt_Scheme"])
         if "Yes" in scheme_text:
@@ -271,5 +271,3 @@ for idx, (_, row) in enumerate(matched_df.iterrows()):
 # ==========================================
 # LIVE PAKWHEELS & PUNJAB SCHEME UPDATES
 # ==========================================
-st.markdown("### 🌐 Live PakWheels & Punjab Govt E-Bike Scheme Updates")
-top_vehicle = str(matched_df.iloc["Model_Name"])
