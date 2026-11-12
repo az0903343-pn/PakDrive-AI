@@ -2,142 +2,164 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-from xgboost import XGBClassifier
+import os
 from duckduckgo_search import DDGS
 
 # ==========================================
 # 1. PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(
-    page_title="PakDrive AI | Luxury 3D Vehicle Showroom",
+    page_title="PakDrive AI | Ultra-Pro 3D Luxury Showroom",
     page_icon="🚘",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
 # ==========================================
-# 2. LUXURY SHOWROOM CSS & FLOATING CHATBOT
+# 2. ULTRA-PRO DARK OBSIDIAN & GOLD LUXURY CSS
 # ==========================================
 st.markdown("""
 <style>
     @import url('https://googleapis.com');
     
-    .stApp {
-        background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 50%, #f8fafc 100%) !important;
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+        background: radial-gradient(circle at top, #111827 0%, #030712 100%) !important;
+        color: #f8fafc !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
     
-    .lux-navbar {
-        background: #ffffff;
-        padding: 16px 30px;
-        border-radius: 16px;
-        box-shadow: 0 6px 25px rgba(15, 23, 42, 0.08);
+    h1, h2, h3, h4, h5, p, label, span, div {
+        color: #f8fafc !important;
+    }
+    
+    /* Luxury Glass Navbar */
+    .pro-navbar {
+        background: rgba(17, 24, 39, 0.85);
+        backdrop-filter: blur(16px);
+        padding: 18px 32px;
+        border-radius: 18px;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        border-bottom: 4px solid #059669;
+        margin-bottom: 24px;
     }
-    .lux-brand {
-        font-size: 26px;
+    .pro-brand {
+        font-size: 28px;
         font-weight: 800;
-        color: #064e3b;
+        background: linear-gradient(90deg, #10b981, #34d399, #fbbf24);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
     
-    .showroom-hero {
-        background: radial-gradient(circle at 50% 20%, #1e293b 0%, #090d16 100%);
-        padding: 45px 30px;
-        border-radius: 22px;
+    /* Ultra-Pro Hero Section */
+    .pro-hero {
+        background: linear-gradient(135deg, #064e3b 0%, #0f172a 55%, #1e1b4b 100%);
+        padding: 55px 35px;
+        border-radius: 24px;
         text-align: center;
-        box-shadow: 0 18px 40px rgba(9, 13, 22, 0.3);
-        margin-bottom: 25px;
+        border: 1px solid rgba(52, 211, 153, 0.4);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+        margin-bottom: 30px;
     }
-    .showroom-title {
-        font-size: 36px;
+    .pro-hero-title {
+        font-size: 40px;
         font-weight: 800;
+        letter-spacing: -0.5px;
         color: #ffffff !important;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
-    .showroom-sub {
+    .pro-hero-sub {
         font-size: 16px;
-        color: #cbd5e1 !important;
-        max-width: 780px;
+        color: #d1fae5 !important;
+        max-width: 820px;
         margin: 0 auto;
+        line-height: 1.6;
     }
     
-    .lux-card {
-        background: #ffffff;
-        border-radius: 20px;
-        padding: 20px;
+    /* Ultra-Pro 3D Vehicle Card */
+    .pro-card {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 22px;
+        padding: 22px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-        border: 1px solid #e2e8f0;
-        transition: transform 0.35s ease, box-shadow 0.35s ease;
-        margin-bottom: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-bottom: 22px;
     }
-    .lux-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 22px 45px rgba(5, 150, 105, 0.22);
-        border-color: #059669;
+    .pro-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        border-color: #10b981;
+        box-shadow: 0 25px 55px rgba(16, 185, 129, 0.3);
     }
-    .studio-stage {
-        background: radial-gradient(circle, #ffffff 0%, #e2e8f0 100%);
+    .studio-pedestal {
+        background: radial-gradient(circle, #ffffff 10%, #cbd5e1 100%);
         border-radius: 16px;
-        padding: 12px;
-        margin: 12px 0;
-        border: 1px solid #cbd5e1;
+        padding: 14px;
+        margin: 14px 0;
+        box-shadow: inset 0 -10px 20px rgba(0,0,0,0.15);
     }
-    .vehicle-3d-photo {
+    .vehicle-hd-img {
         width: 100%;
-        height: 160px;
+        height: 165px;
         object-fit: contain;
-        filter: drop-shadow(0 15px 15px rgba(0,0,0,0.25));
-        transition: transform 0.4s ease;
+        filter: drop-shadow(0 16px 16px rgba(0,0,0,0.35));
+        transition: transform 0.45s ease;
     }
-    .lux-card:hover .vehicle-3d-photo {
-        transform: scale(1.1) rotate(-2deg);
+    .pro-card:hover .vehicle-hd-img {
+        transform: scale(1.12) rotate(-2deg);
     }
-    .lux-price {
-        font-size: 23px;
+    .pro-price {
+        font-size: 24px;
         font-weight: 800;
-        color: #064e3b;
+        color: #34d399 !important;
         margin: 8px 0;
     }
-    .buy-btn {
+    .pro-buy-btn {
         display: block;
         width: 100%;
-        background: linear-gradient(90deg, #064e3b 0%, #059669 100%);
+        background: linear-gradient(90deg, #059669 0%, #10b981 100%);
         color: #ffffff !important;
-        padding: 10px 14px;
+        padding: 11px 16px;
         border-radius: 12px;
         font-weight: 700;
-        font-size: 13px;
+        font-size: 13.5px;
         text-decoration: none;
-        margin-top: 12px;
-        box-shadow: 0 6px 15px rgba(5, 150, 105, 0.3);
+        margin-top: 14px;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+    }
+    .pro-buy-btn:hover {
+        opacity: 0.92;
+        color: #ffffff !important;
     }
     
-    .video-3d-stage {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border-radius: 20px;
+    /* 3D Rotating Video Stage */
+    .stage-3d-box {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        border-radius: 22px;
         padding: 25px;
         text-align: center;
-        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
-        margin-bottom: 15px;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        box-shadow: 0 20px 45px rgba(0,0,0,0.55);
+        margin-bottom: 16px;
     }
-    @keyframes spin3dShowroom {
-        0% { transform: perspective(900px) rotateY(-16deg) scale(1.0); }
-        50% { transform: perspective(900px) rotateY(16deg) scale(1.08); }
-        100% { transform: perspective(900px) rotateY(-16deg) scale(1.0); }
+    @keyframes spinShowroom {
+        0% { transform: perspective(900px) rotateY(-18deg) scale(1.0); }
+        50% { transform: perspective(900px) rotateY(18deg) scale(1.08); }
+        100% { transform: perspective(900px) rotateY(-18deg) scale(1.0); }
     }
-    .rotating-3d-vehicle {
-        width: 260px;
-        height: 175px;
+    .spin-vehicle-img {
+        width: 270px;
+        height: 180px;
         object-fit: contain;
-        animation: spin3dShowroom 6s infinite ease-in-out;
-        filter: drop-shadow(0 20px 25px rgba(16, 185, 129, 0.35));
+        animation: spinShowroom 6s infinite ease-in-out;
+        filter: drop-shadow(0 22px 28px rgba(16, 185, 129, 0.45));
     }
     
+    /* Superior University Style Floating Corner Chatbot */
     div[data-testid="stPopover"] {
         position: fixed;
         bottom: 24px;
@@ -145,46 +167,39 @@ st.markdown("""
         z-index: 99999;
     }
     div[data-testid="stPopover"] > button {
-        background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%) !important;
+        background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%) !important;
         color: #ffffff !important;
         border-radius: 50px !important;
-        padding: 14px 26px !important;
+        padding: 15px 28px !important;
         font-size: 15px !important;
         font-weight: 700 !important;
-        box-shadow: 0 10px 28px rgba(124, 58, 237, 0.45) !important;
+        box-shadow: 0 12px 30px rgba(139, 92, 246, 0.55) !important;
         border: 2px solid #ffffff !important;
-    }
-    .chat-header-card {
-        background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
-        padding: 16px;
-        border-radius: 14px;
-        text-align: center;
-        margin-bottom: 12px;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. LUXURY NAVBAR & HERO SECTION (RENDERS INSTANTLY)
+# 3. NAVBAR & HERO SECTION
 # ==========================================
 st.markdown("""
-<div class="lux-navbar">
-    <div class="lux-brand">🚘 PakDrive AI <span style="font-size:13px; color:#475569;">| LUXURY 3D SHOWROOM</span></div>
-    <div style="font-size:14px; font-weight:600; color:#0f172a;">Cycle to Helicopter • Live PakWheels API • Maryam Nawaz E-Bike Scheme</div>
+<div class="pro-navbar">
+    <div class="pro-brand">🚘 PakDrive AI <span style="font-size:13px; color:#94a3b8; -webkit-text-fill-color:#94a3b8;">| ULTRA-PRO 3D SHOWROOM</span></div>
+    <div style="font-size:13.5px; font-weight:600; color:#cbd5e1;">Cycle to Helicopter • Live Market API • Maryam Nawaz E-Bike Scheme</div>
 </div>
 
-<div class="showroom-hero">
-    <div class="showroom-title">EXPERIENCE LUXURY & SMART MOBILITY</div>
-    <div class="showroom-sub">
-        Apna budget darj karein — Hamara AI aapke budget ki exact range mein behtareen sawari, 3D Showroom Tour, Live Market Links, aur Punjab Govt Scheme ki mukammal tafseel dikhayega.
+<div class="pro-hero">
+    <div class="pro-hero-title">NEXT-GEN 3D VEHICLE & SCHEME ADVISOR</div>
+    <div class="pro-hero-sub">
+        Cycle se lekar Helicopter tak — Apna budget darj karein aur dekhein Ultra-HD 3D Showroom, Taza Market Rates, Electric vs Petrol Comparison, aur Maryam Nawaz Punjab E-Bike Scheme ki mukammal tafseel.
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. USER INPUT PANEL (RENDERS IMMEDIATELY!)
+# 4. USER INPUT CONTROLS
 # ==========================================
-st.markdown("### 🔍 Apna Budget Aur Zaroorat Select Karein")
+st.markdown("### 🎛️ Apna Budget Aur Zaroorat Select Karein")
 c1, c2, c3, c4 = st.columns(4)
 budget = c1.number_input("Aapka Budget (PKR)", min_value=15000, max_value=1500000000, value=160000, step=10000)
 daily_km = c2.slider("Rozana ka Safar (KM)", min_value=2, max_value=500, value=35)
@@ -192,69 +207,59 @@ fuel_pref = c3.selectbox("Fuel / Power Type", ["Any (Show Best in Budget)", "Ele
 usage_type = c4.selectbox("Istemaal (Purpose)", ["Personal", "Family", "Commercial", "Luxury/Offroad", "Marine/Leisure", "Aviation"])
 
 # ==========================================
-# 5. FAST MODEL & DATASET LOADING (NO TENSORFLOW HANG)
+# 5. BUILT-IN MASTER CATALOG + SAFE KAGGLE MODEL LOADER
 # ==========================================
-VEHICLE_MEDIA = {
-    "1_Bicycle": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
+CATALOG = [
+    {
+        "Model_Name": "Sohrab Classic Bicycle",
+        "Category": "Bicycle",
+        "Fuel_Type": "Manual",
+        "Price_PKR": 22000,
+        "Running_Cost": 0,
+        "Range_KM": 15,
+        "Govt_Scheme": "Standard Market",
+        "Advantages": "Zero petrol kharcha, sehat ke liye behtareen, kisi license ki zaroorat nahi.",
+        "Disadvantages": "Raftaar kam hai aur lambay safar mein thakawat hoti hai.",
+        "Img": "https://wikimedia.org",
+        "Link": "https://pakwheels.com"
     },
-    "2_Electric_Cycle": {
-        "img": "https://wikimedia.org",
-        "url": "https://olx.com.pk"
+    {
+        "Model_Name": "Smart E-Bicycle 350W",
+        "Category": "Electric Cycle",
+        "Fuel_Type": "Electric",
+        "Price_PKR": 115000,
+        "Running_Cost": 80,
+        "Range_KM": 45,
+        "Govt_Scheme": "Standard Market",
+        "Advantages": "Pedal aur electric motor dono options, charging kharcha na hone ke barabar.",
+        "Disadvantages": "Top speed 30 km/h tak mehdood hai.",
+        "Img": "https://wikimedia.org",
+        "Link": "https://olx.com.pk"
     },
-    "3_Electric_Bike": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
+    {
+        "Model_Name": "Honda CD 70 (2026 Model)",
+        "Category": "Petrol Bike",
+        "Fuel_Type": "Petrol",
+        "Price_PKR": 157900,
+        "Running_Cost": 1800,
+        "Range_KM": 55,
+        "Govt_Scheme": "Yes (Punjab Petrol Bike Quota)",
+        "Advantages": "Pakistan mein sab se mazboot resale value, har gali mein mechanic aur saste parts.",
+        "Disadvantages": "Mehngay petrol ki wajah se mahana Rs. 8,000+ kharcha aata hai.",
+        "Img": "https://wikimedia.org",
+        "Link": "https://pakwheels.com"
     },
-    "4_Petrol_Bike": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
+    {
+        "Model_Name": "Jolta JE-70L (Punjab E-Bike)",
+        "Category": "Electric Bike",
+        "Fuel_Type": "Electric",
+        "Price_PKR": 185000,
+        "Running_Cost": 120,
+        "Range_KM": 80,
+        "Govt_Scheme": "Yes (Maryam Nawaz E-Bike Scheme)",
+        "Advantages": "Students ke liye bina sood (0% markup) asaan aqsaat, Rs. 120 mein 100 km safar.",
+        "Disadvantages": "Full charge hone mein 5-6 ghantay lagtay hain, 80 km range limit.",
+        "Img": "https://wikimedia.org",
+        "Link": "https://pakwheels.com"
     },
-    "5_Three_Wheeler": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
-    },
-    "6_Car_Sedan_Hatchback": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
-    },
-    "7_Electric_Car": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
-    },
-    "8_SUV_4x4": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
-    },
-    "9_Van_Bus": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
-    },
-    "10_Heavy_Truck": {
-        "img": "https://wikimedia.org",
-        "url": "https://pakwheels.com"
-    },
-    "11_Boat_Yacht": {
-        "img": "https://wikimedia.org",
-        "url": "https://olx.com.pk"
-    },
-    "12_Helicopter_Aircraft": {
-        "img": "https://wikimedia.org",
-        "url": "https://controller.com"
-    }
-}
-
-@st.cache_resource
-def load_fast_models():
-    df = pd.read_csv("vehicles_3d_master.csv")
-    scaler = joblib.load("scaler.pkl")
-    le_fuel = joblib.load("le_fuel.pkl")
-    le_usage = joblib.load("le_usage.pkl")
-    le_target = joblib.load("le_target.pkl")
-    xgb_model = XGBClassifier()
-    xgb_model.load_model("xgb_vehicle_model.json")
-    return df, scaler, le_fuel, le_usage, le_target, xgb_model
-
-df, scaler, le_fuel, le_usage, le_target, xgb_model = load_fast_models()
-
+    {
