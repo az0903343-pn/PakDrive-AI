@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 from duckduckgo_search import DDGS
 
 # ==========================================
-# PAGE CONFIGURATION
+# 1. PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(
     page_title="PakDrive AI | Luxury 3D Vehicle Showroom",
@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# LUXURY SHOWROOM CSS & FLOATING CHATBOT
+# 2. LUXURY SHOWROOM CSS & FLOATING CHATBOT
 # ==========================================
 st.markdown("""
 <style>
@@ -166,7 +166,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# VERIFIED VEHICLE IMAGES & MARKET LINKS
+# 3. VERIFIED VEHICLE IMAGES & MARKET LINKS
 # ==========================================
 VEHICLE_MEDIA = {
     "1_Bicycle": {
@@ -220,7 +220,7 @@ VEHICLE_MEDIA = {
 }
 
 # ==========================================
-# LOAD MODELS & DATASET
+# 4. LOAD MODELS & DATASET
 # ==========================================
 @st.cache_resource
 def load_assets():
@@ -245,7 +245,7 @@ def fetch_live_market_data(query):
         return []
 
 # ==========================================
-# LUXURY NAVBAR & HERO SECTION
+# 5. LUXURY NAVBAR & HERO SECTION
 # ==========================================
 st.markdown("""
 <div class="lux-navbar">
@@ -262,8 +262,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# USER INPUT PANEL
+# 6. USER INPUT PANEL (NO INDENTATION BLOCKS!)
 # ==========================================
 st.markdown("### 🔍 Apna Budget Aur Zaroorat Select Karein")
 c1, c2, c3, c4 = st.columns(4)
-with c1:
