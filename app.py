@@ -16,12 +16,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Force Clean White & Emerald Green Website Look (No Dark Mode Glitch)
 st.markdown("""
 <style>
     @import url('https://googleapis.com');
     
-    /* Force Light Background Everywhere */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #f4f7f5 !important;
         color: #1a202c !important;
@@ -32,7 +30,6 @@ st.markdown("""
         color: #1a202c !important;
     }
     
-    /* Top Navbar */
     .navbar {
         background-color: #ffffff;
         padding: 16px 32px;
@@ -50,7 +47,6 @@ st.markdown("""
         color: #0d4b26 !important;
     }
     
-    /* Hero Banner */
     .hero-box {
         background: linear-gradient(135deg, #09381c 0%, #15733b 100%);
         padding: 50px 30px;
@@ -72,7 +68,6 @@ st.markdown("""
         margin: 0 auto;
     }
     
-    /* 3D Vehicle Cards */
     .vehicle-card {
         background: #ffffff;
         border-radius: 18px;
@@ -117,7 +112,6 @@ st.markdown("""
         margin: 8px 0;
     }
     
-    /* Floating Corner Chatbot Styling */
     div[data-testid="stPopover"] {
         position: fixed;
         bottom: 25px;
@@ -135,7 +129,6 @@ st.markdown("""
         border: 2px solid #ffffff !important;
     }
     
-    /* Footer */
     .footer {
         background-color: #09381c;
         padding: 25px;
@@ -167,13 +160,11 @@ def load_assets():
 
 df, scaler, le_fuel, le_usage, le_target, xgb_model, dl_model = load_assets()
 
-# Free Live Web Search Function (No API Key Needed!)
 @st.cache_data(ttl=3600)
 def get_live_market_rates(query):
     try:
         with DDGS() as ddgs:
-            results = list(ddgs.text(query, max_results=3))
-            return results
+            return list(ddgs.text(query, max_results=3))
     except Exception:
         return []
 
@@ -211,63 +202,75 @@ with c4:
 predict_btn = st.button("🚀 Show 3D Vehicles, Rates & Comparison", use_container_width=True, type="primary")
 
 # ==========================================
-# RESULTS & 3D VEHICLE CARDS (ALWAYS VISIBLE)
+# RESULTS & 3D VEHICLE CARDS
 # ==========================================
-if predict_btn or True:
-    # 1. ML & DL Model Prediction
-    selected_fuel = "Electric" if fuel_pref == "Any (Show All)" else fuel_pref
-    if selected_fuel not in le_fuel.classes_:
-        selected_fuel = le_fuel.classes_
-    if usage_type not in le_usage.classes_:
-        usage_type = le_usage.classes_
+selected_fuel = "Electric" if fuel_pref == "Any (Show All)" else fuel_pref
+if selected_fuel not in le_fuel.classes_:
+    selected_fuel = le_fuel.classes_
+if usage_type not in le_usage.classes_:
+    usage_type = le_usage.classes_
 
-    fuel_enc = le_fuel.transform([selected_fuel])
-    usage_enc = le_usage.transform([usage_type])
-    passengers = 1 if budget < 150000 else (2 if budget < 500000 else 5)
-    
-    input_data = np.array([[np.log1p(budget), daily_km, passengers, fuel_enc, usage_enc]])
-    input_scaled = scaler.transform(input_data)
-    
-    dl_probs = dl_model.predict(input_scaled, verbose=0)
-    dl_pred_idx = int(np.argmax(dl_probs))
-    dl_confidence = float(dl_probs[dl_pred_idx] * 100)
-    predicted_category = str(le_target.inverse_transform([dl_pred_idx])).split('_', 1)[-1]
-    
-    xgb_pred_idx = int(xgb_model.predict(input_scaled))
-    xgb_category = str(le_target.inverse_transform([xgb_pred_idx])).split('_', 1)[-1]
+fuel_enc = le_fuel.transform([selected_fuel])
+usage_enc = le_usage.transform([usage_type])
+passengers = 1 if budget < 150000 else (2 if budget < 500000 else 5)
 
-    st.success(f"🧠 **Deep Learning Prediction:** `{predicted_category}` (Confidence: **{dl_confidence:.1f}%**)  |  🚀 **XGBoost ML Prediction:** `{xgb_category}`")
+input_data = np.array([[np.log1p(budget), daily_km, passengers, fuel_enc, usage_enc]])
+input_scaled = scaler.transform(input_data)
 
-    # 2. Filter Vehicles Guaranteed to Show Results
-    unique_vehicles = df.drop_duplicates(subset=["Model_Name"]).copy()
-    if fuel_pref != "Any (Show All)":
-        filtered = unique_vehicles[unique_vehicles["Fuel_Type"] == fuel_pref].copy()
-        if filtered.empty:
-            filtered = unique_vehicles.copy()
-    else:
+dl_probs = dl_model.predict(input_scaled, verbose=0)
+dl_pred_idx = int(np.argmax(dl_probs))
+dl_confidence = float(dl_probs[dl_pred_idx] * 100)
+predicted_category = str(le_target.inverse_transform([dl_pred_idx])).split('_', 1)[-1]
+
+xgb_pred_idx = int(xgb_model.predict(input_scaled))
+xgb_category = str(le_target.inverse_transform([xgb_pred_idx])).split('_', 1)[-1]
+
+st.success(f"🧠 **Deep Learning Prediction:** `{predicted_category}` (Confidence: **{dl_confidence:.1f}%**)  |  🚀 **XGBoost ML Prediction:** `{xgb_category}`")
+
+# Filter Vehicles
+unique_vehicles = df.drop_duplicates(subset=["Model_Name"]).copy()
+if fuel_pref != "Any (Show All)":
+    filtered = unique_vehicles[unique_vehicles["Fuel_Type"] == fuel_pref].copy()
+    if filtered.empty:
         filtered = unique_vehicles.copy()
+else:
+    filtered = unique_vehicles.copy()
 
-    filtered["Price_Diff"] = abs(filtered["Price_PKR"] - budget)
-    matched_df = filtered.sort_values("Price_Diff").head(4)
+filtered["Price_Diff"] = abs(filtered["Price_PKR"] - budget)
+matched_df = filtered.sort_values("Price_Diff").head(4)
 
-    # 3. Display 3D Vehicle Cards
-    st.markdown("### 🏆 Aapke Budget Ke Mutabiq 3D Vehicles & Latest Rates")
-    cols = st.columns(len(matched_df))
-    
-    for idx, (_, row) in enumerate(matched_df.iterrows()):
-        with cols[idx]:
-            if "Yes" in str(row["Govt_Scheme"]):
-                scheme_html = f'<div class="badge-scheme">🏛️ {row["Govt_Scheme"]}</div>'
-            else:
-                scheme_html = '<div class="badge-scheme" style="background:#e2e8f0; color:#334155 !important;">Standard Market Rate</div>'
-            
-            card_html = (
-                '<div class="vehicle-card">'
-                + scheme_html
-                + f'<img src="{row["Image_3D_URL"]}" class="vehicle-img-3d">'
-                + f'<h4 style="margin:6px 0; font-weight:700;">{row["Model_Name"]}</h4>'
-                + f'<div style="font-size:13px; color:#475569 !important;">{row["Fuel_Type"]} • Range: {row["Max_Range_KM"]} km</div>'
-                + f'<div class="price-tag">Rs. {int(row["Price_PKR"]):,}</div>'
-                + f'<div style="font-size:12px; color:#0f766e !important; font-weight:600;">Kharcha: Rs. {row["Running_Cost_Per_100km"]} / 100km</div>'
-                + '<hr style="margin:12px 0; border-color:#e2e8f0;">'
-                + '<div style="text-align:left; font-size:12.5px;">'
+# Display 3D Vehicle Cards (Zero SyntaxError List Join Method)
+st.markdown("### 🏆 Aapke Budget Ke Mutabiq 3D Vehicles & Latest Rates")
+cols = st.columns(len(matched_df))
+
+for idx, (_, row) in enumerate(matched_df.iterrows()):
+    with cols[idx]:
+        scheme_text = str(row["Govt_Scheme"])
+        if "Yes" in scheme_text:
+            badge = f'<div class="badge-scheme">🏛️ {scheme_text}</div>'
+        else:
+            badge = '<div class="badge-scheme" style="background:#e2e8f0; color:#334155 !important;">Standard Market Rate</div>'
+        
+        price_formatted = f"{int(row['Price_PKR']):,}"
+        html_parts = [
+            '<div class="vehicle-card">',
+            badge,
+            f'<img src="{row["Image_3D_URL"]}" class="vehicle-img-3d">',
+            f'<h4 style="margin:6px 0; font-weight:700;">{row["Model_Name"]}</h4>',
+            f'<div style="font-size:13px; color:#475569 !important;">{row["Fuel_Type"]} • Range: {row["Max_Range_KM"]} km</div>',
+            f'<div class="price-tag">Rs. {price_formatted}</div>',
+            f'<div style="font-size:12px; color:#0f766e !important; font-weight:600;">Kharcha: Rs. {row["Running_Cost_Per_100km"]} / 100km</div>',
+            '<hr style="margin:12px 0; border-color:#e2e8f0;">',
+            '<div style="text-align:left; font-size:12.5px;">',
+            f'<p style="color:#15803d !important; margin-bottom:6px;"><b>✅ Advantages:</b> {row["Advantages"]}</p>',
+            f'<p style="color:#b91c1c !important; margin-bottom:0;"><b>❌ Disadvantages:</b> {row["Disadvantages"]}</p>',
+            '</div></div>'
+        ]
+        st.markdown("".join(html_parts), unsafe_allow_html=True)
+
+# Live Market Rates & Punjab Scheme Auto-Fetcher
+st.markdown("### 🌐 Live PakWheels & Punjab Govt E-Bike Scheme Updates")
+top_vehicle = matched_df.iloc["Model_Name"]
+live_results = get_live_market_rates(f"{top_vehicle} price in Pakistan 2026 PakWheels Punjab E-Bike scheme")
+
+if live_results:
