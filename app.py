@@ -17,7 +17,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS (Inspired by your Emerald Green & White Website Image + 3D Cards)
 st.markdown("""
 <style>
     @import url('https://googleapis.com');
@@ -27,7 +26,6 @@ st.markdown("""
         background-color: #f8faf9;
     }
     
-    /* Top Navbar */
     .navbar {
         background-color: #ffffff;
         padding: 15px 30px;
@@ -50,7 +48,6 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* Hero Banner */
     .hero-box {
         background: linear-gradient(135deg, #09381c 0%, #146c38 100%);
         padding: 45px 30px;
@@ -72,7 +69,6 @@ st.markdown("""
         margin: 0 auto;
     }
     
-    /* Floating Search Card */
     .search-container {
         background: #ffffff;
         padding: 25px;
@@ -82,7 +78,6 @@ st.markdown("""
         margin-bottom: 30px;
     }
     
-    /* 3D Vehicle Cards */
     .vehicle-card {
         background: #ffffff;
         border-radius: 16px;
@@ -126,7 +121,6 @@ st.markdown("""
         margin: 8px 0;
     }
     
-    /* Footer */
     .footer {
         background-color: #09381c;
         color: #e2e8f0;
@@ -153,13 +147,13 @@ def load_assets():
     xgb_model = XGBClassifier()
     xgb_model.load_model("xgb_vehicle_model.json")
     
-    dl_model = load_model("dl_vehicle_model.h5")
+    dl_model = load_model("dl_vehicle_model.h5", compile=False)
     return df, scaler, le_fuel, le_usage, le_target, xgb_model, dl_model
 
 try:
     df, scaler, le_fuel, le_usage, le_target, xgb_model, dl_model = load_assets()
 except Exception as e:
-    st.error(f"Model files load karne mein masla aaya: {e}. Yaqeeni banayein ke tamam .pkl, .h5, aur .json files GitHub repo mein mojood hain.")
+    st.error(f"Model files load karne mein masla aaya: {e}")
     st.stop()
 
 # ==========================================
@@ -190,7 +184,7 @@ with st.expander("🔑 Live Market Rates & AI Analysis API Keys (Optional)"):
         serper_api_key = st.text_input("Serper.dev API Key (Live PakWheels & Govt Portal Rates)", type="password")
 
 # ==========================================
-# USER INPUT PANEL (WEBSITE SEARCH BAR STYLE)
+# USER INPUT PANEL
 # ==========================================
 st.markdown('<div class="search-container">', unsafe_allow_html=True)
 st.subheader("🔍 Apni Zaroorat Aur Budget Batayein")
@@ -212,7 +206,6 @@ st.markdown('</div>', unsafe_allow_html=True)
 # PREDICTION & 3D RESULTS SECTION
 # ==========================================
 if predict_btn:
-    # Model Prediction Logic
     selected_fuel = "Electric" if fuel_pref == "Any (AI Recommend)" else fuel_pref
     if selected_fuel not in le_fuel.classes_:
         selected_fuel = le_fuel.classes_[0]
@@ -228,17 +221,19 @@ if predict_btn:
     
     # Deep Learning & XGBoost Predictions
     dl_probs = dl_model.predict(input_scaled, verbose=0)[0]
-    dl_pred_idx = np.argmax(dl_probs)
-    dl_confidence = dl_probs[dl_pred_idx] * 100
-    predicted_category = le_target.inverse_transform([dl_pred_idx])[0]
+    dl_pred_idx = int(np.argmax(dl_probs))
+    dl_confidence = float(dl_probs[dl_pred_idx] * 100)
+    predicted_category = str(le_target.inverse_transform([dl_pred_idx])[0])
     
-    xgb_pred_idx = xgb_model.predict(input_scaled)[0]
-    xgb_category = le_target.inverse_transform([xgb_pred_idx])[0]
+    xgb_pred_idx = int(xgb_model.predict(input_scaled)[0])
+    xgb_category = str(le_target.inverse_transform([xgb_pred_idx])[0])
 
-    # Top AI Prediction Banner
-    st.success(f"🧠 **Deep Learning Model Prediction:** `{predicted_category.split('_', 1)[1]}` (Confidence: **{dl_confidence:.1f}%**) | 🚀 **XGBoost ML Prediction:** `{xgb_category.split('_', 1)[1]}`")
+    dl_clean_name = predicted_category.split('_', 1)[-1]
+    xgb_clean_name = xgb_category.split('_', 1)[-1]
 
-    # Budget ke mutabiq best matching vehicles filter karna
+    st.success(f"🧠 **Deep Learning Model Prediction:** `{dl_clean_name}` (Confidence: **{dl_confidence:.1f}%**) | 🚀 **XGBoost ML Prediction:** `{xgb_clean_name}`")
+
+    # Filter matching vehicles
     matched_df = df[(df["Price_PKR"] <= budget * 1.25) & (df["Price_PKR"] >= budget * 0.40)].drop_duplicates(subset=["Model_Name"])
     if matched_df.empty:
         df["Price_Diff"] = abs(df["Price_PKR"] - budget)
@@ -246,25 +241,28 @@ if predict_btn:
     else:
         matched_df = matched_df.head(4)
 
-    # 3D Vehicle Cards Display
+    # 3D Vehicle Cards Display (Clean HTML without multiline f-string errors)
     st.markdown("### 🏆 Aapke Budget Mein Behtareen 3D Options")
     cols = st.columns(len(matched_df))
     
     for idx, (_, row) in enumerate(matched_df.iterrows()):
         with cols[idx]:
-            scheme_html = f'<div class="badge-scheme">🏛️ {row["Govt_Scheme"]}</div>' if "Yes" in str(row["Govt_Scheme"]) else '<div class="badge-scheme" style="background:#f1f5f9; color:#475569;">Standard Market</div>'
-            st.markdown(f"""
-            <div class="vehicle-card">
-                {scheme_html}
-                <br>
-                <img src="{row['Image_3D_URL']}" class="vehicle-img-3d">
-                <h4 style="margin:5px 0; color:#1e293b;">{row['Model_Name']}</h4>
-                <div style="font-size:13px; color:#64748b;">{row['Fuel_Type']} • Max Range: {row['Max_Range_KM']} km</div>
-                <div class="price-tag">Rs. {row['Price_PKR']:,.0f}</div>
-                <div style="font-size:12px; color:#0f766e; margin-bottom:10px;">Running Cost: Rs. {row['Running_Cost_Per_100km']}/100km</div>
-                <hr style="margin:10px 0;">
-                <div style="text-align:left; font-size:12px;">
-                    <p style="color:#15803d;"><b>✅ Advantages:</b> {row['Advantages']}</p>
-                    <p style="color:#b91c1c;"><b>❌ Disadvantages:</b> {row['Disadvantages']}</p>
-                </div>
-            </div>
+            if "Yes" in str(row["Govt_Scheme"]):
+                scheme_html = '<div class="badge-scheme">🏛️ ' + str(row["Govt_Scheme"]) + '</div>'
+            else:
+                scheme_html = '<div class="badge-scheme" style="background:#f1f5f9; color:#475569;">Standard Market</div>'
+            
+            card_html = (
+                '<div class="vehicle-card">'
+                + scheme_html + '<br>'
+                + '<img src="' + str(row['Image_3D_URL']) + '" class="vehicle-img-3d">'
+                + '<h4 style="margin:5px 0; color:#1e293b;">' + str(row['Model_Name']) + '</h4>'
+                + '<div style="font-size:13px; color:#64748b;">' + str(row['Fuel_Type']) + ' • Max Range: ' + str(row['Max_Range_KM']) + ' km</div>'
+                + '<div class="price-tag">Rs. ' + f"{int(row['Price_PKR']):,}" + '</div>'
+                + '<div style="font-size:12px; color:#0f766e; margin-bottom:10px;">Running Cost: Rs. ' + str(row['Running_Cost_Per_100km']) + '/100km</div>'
+                + '<hr style="margin:10px 0;">'
+                + '<div style="text-align:left; font-size:12px;">'
+                + '<p style="color:#15803d;"><b>✅ Advantages:</b> ' + str(row['Advantages']) + '</p>'
+                + '<p style="color:#b91c1c;"><b>❌ Disadvantages:</b> ' + str(row['Disadvantages']) + '</p>'
+                + '</div></div>'
+            )
