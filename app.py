@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
-import os
 from duckduckgo_search import DDGS
 
 # 1. PAGE CONFIGURATION
@@ -113,47 +111,41 @@ daily_km = c2.slider("Rozana ka Safar (KM)", min_value=2, max_value=500, value=3
 fuel_pref = c3.selectbox("Fuel / Power Type", ["Any (Show Best in Budget)", "Electric", "Petrol", "Manual", "Diesel", "Aviation Fuel"])
 usage_type = c4.selectbox("Istemaal (Purpose)", ["Personal", "Family", "Commercial", "Luxury/Offroad", "Marine/Leisure", "Aviation"])
 
-# 5. LOAD MASTER DATA FROM CSV (NO CURLY BRACES IN CODE!)
+# 5. LOAD MASTER DATA FROM CSV
 df_raw = pd.read_csv("vehicles_3d_master.csv").drop_duplicates(subset=["Model_Name"]).copy()
 
-img_map = dict(zip(
-    ["1_Bicycle", "2_Electric_Cycle", "3_Electric_Bike", "4_Petrol_Bike", "5_Three_Wheeler", "6_Car_Sedan_Hatchback", "7_Electric_Car", "8_SUV_4x4", "9_Van_Bus", "10_Heavy_Truck", "11_Boat_Yacht", "12_Helicopter_Aircraft"],
-    [
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org",
-        "https://wikimedia.org"
-    ]
-))
+cats = ["1_Bicycle", "2_Electric_Cycle", "3_Electric_Bike", "4_Petrol_Bike", "5_Three_Wheeler", "6_Car_Sedan_Hatchback", "7_Electric_Car", "8_SUV_4x4", "9_Van_Bus", "10_Heavy_Truck", "11_Boat_Yacht", "12_Helicopter_Aircraft"]
+imgs = [
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org",
+    "https://wikimedia.org"
+]
+urls = [
+    "https://pakwheels.com",
+    "https://olx.com.pk",
+    "https://pakwheels.com",
+    "https://pakwheels.com",
+    "https://pakwheels.com",
+    "https://pakwheels.com",
+    "https://pakwheels.com",
+    "https://pakwheels.com",
+    "https://pakwheels.com",
+    "https://pakwheels.com",
+    "https://olx.com.pk",
+    "https://controller.com"
+]
 
-url_map = dict(zip(
-    ["1_Bicycle", "2_Electric_Cycle", "3_Electric_Bike", "4_Petrol_Bike", "5_Three_Wheeler", "6_Car_Sedan_Hatchback", "7_Electric_Car", "8_SUV_4x4", "9_Van_Bus", "10_Heavy_Truck", "11_Boat_Yacht", "12_Helicopter_Aircraft"],
-    [
-        "https://pakwheels.com",
-        "https://olx.com.pk",
-        "https://pakwheels.com",
-        "https://pakwheels.com",
-        "https://pakwheels.com",
-        "https://pakwheels.com",
-        "https://pakwheels.com",
-        "https://pakwheels.com",
-        "https://pakwheels.com",
-        "https://pakwheels.com",
-        "https://olx.com.pk",
-        "https://controller.com"
-    ]
-))
-
-df_raw["HD_Img"] = df_raw["Category"].map(img_map)
-df_raw["Market_URL"] = df_raw["Category"].map(url_map)
+df_raw["HD_Img"] = df_raw["Category"].map(dict(zip(cats, imgs)))
+df_raw["Market_URL"] = df_raw["Category"].map(dict(zip(cats, urls)))
 
 # 6. AI PREDICTION
 if budget < 80000:
@@ -182,20 +174,20 @@ else:
 sub_df["Price_Diff"] = abs(sub_df["Price_PKR"] - budget)
 matched = sub_df.sort_values("Price_Diff").head(4).to_dict("records")
 
-# 8. 3D SHOWROOM CARDS
+# 8. 3D SHOWROOM CARDS (SINGLE-LINE HTML - NO MULTILINE PARENTHESIS!)
 st.markdown(f"### 🏆 Aapke Budget (Rs. {budget:,}) Ki Range Mein Best 3D Vehicles")
 cols = st.columns(len(matched))
 
 for i, item in enumerate(matched):
     is_scheme = "Yes" in str(item["Govt_Scheme"])
-    badge_html = (
-        f'<div style="background:#065f46; color:#34d399; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; display:inline-block;">🏛️ {item["Govt_Scheme"]}</div>'
-        if is_scheme else
-        '<div style="background:#334155; color:#cbd5e1; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; display:inline-block;">Verified Market Rate</div>'
-    )
+    if is_scheme:
+        badge_html = f'<div style="background:#065f46; color:#34d399; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; display:inline-block;">🏛️ {item["Govt_Scheme"]}</div>'
+    else:
+        badge_html = '<div style="background:#334155; color:#cbd5e1; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; display:inline-block;">Verified Market Rate</div>'
     price_txt = f"{int(item['Price_PKR']):,}"
-    card_code = (
-        '<div class="pro-card">'
-        + badge_html
-        + '<div class="studio-pedestal"><img src="' + str(item["HD_Img"]) + '" class="vehicle-hd-img"></div>'
-        + '<h4 style="margin:6px 0; font-weight:800; font-size:18px;">' + str(item["Model_Name"]) + '</h4>'
+    img_s = str(item["HD_Img"])
+    name_s = str(item["Model_Name"])
+    fuel_s = str(item["Fuel_Type"])
+    rng_s = str(item["Max_Range_KM"])
+    run_s = str(item["Running_Cost_Per_100km"])
+    url_s = str(item["Market_URL"])
