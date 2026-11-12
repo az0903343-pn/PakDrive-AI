@@ -3,115 +3,152 @@ import pandas as pd
 import numpy as np
 from duckduckgo_search import DDGS
 
+# ==========================================
 # 1. PAGE CONFIGURATION
-st.set_page_config(page_title="PakDrive AI | Ultra-Pro 3D Showroom", page_icon="🚘", layout="wide")
+# ==========================================
+st.set_page_config(
+    page_title="PakDrive AI | Ultra-Pro 3D Vehicle Showroom",
+    page_icon="🚘",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# 2. ULTRA-PRO DARK LUXURY SHOWROOM CSS
+# ==========================================
+# 2. ULTRA-PRO LUXURY DARK SHOWROOM THEME CSS
+# ==========================================
 st.markdown("""
 <style>
     @import url('https://googleapis.com');
+    
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background: radial-gradient(circle at top, #111827 0%, #030712 100%) !important;
         color: #f8fafc !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
-    h1, h2, h3, h4, h5, p, label, span, div { color: #f8fafc !important; }
-    .pro-navbar {
-        background: rgba(17, 24, 39, 0.9);
-        padding: 18px 30px;
-        border-radius: 16px;
-        border: 1px solid #10b981;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
+    
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%) !important;
+        border-right: 2px solid #7c3aed !important;
     }
-    .pro-brand { font-size: 26px; font-weight: 800; color: #34d399 !important; }
+    
+    h1, h2, h3, h4, h5, p, label, span {
+        color: #f8fafc !important;
+    }
+    
     .pro-hero {
-        background: linear-gradient(135deg, #064e3b 0%, #0f172a 60%, #1e1b4b 100%);
-        padding: 50px 30px;
-        border-radius: 22px;
-        text-align: center;
-        border: 1px solid #34d399;
-        margin-bottom: 25px;
-    }
-    .pro-card {
-        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        background: linear-gradient(135deg, #064e3b 0%, #0f172a 55%, #1e1b4b 100%);
+        padding: 40px 30px;
         border-radius: 20px;
-        padding: 20px;
-        text-align: center;
-        border: 1px solid #334155;
-        transition: transform 0.35s ease;
-        margin-bottom: 20px;
-    }
-    .pro-card:hover { transform: translateY(-10px); border-color: #10b981; }
-    .studio-pedestal {
-        background: radial-gradient(circle, #ffffff 15%, #cbd5e1 100%);
-        border-radius: 14px;
-        padding: 12px;
-        margin: 12px 0;
-    }
-    .vehicle-hd-img { width: 100%; height: 155px; object-fit: contain; }
-    .pro-price { font-size: 23px; font-weight: 800; color: #34d399 !important; margin: 8px 0; }
-    .pro-buy-btn {
-        display: block;
-        width: 100%;
-        background: linear-gradient(90deg, #059669 0%, #10b981 100%);
-        color: #ffffff !important;
-        padding: 10px 14px;
-        border-radius: 10px;
-        font-weight: 700;
-        font-size: 13px;
-        text-decoration: none;
-        margin-top: 12px;
-    }
-    .stage-3d-box {
-        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-        border-radius: 20px;
-        padding: 22px;
         text-align: center;
         border: 1px solid #10b981;
-        margin-bottom: 15px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        margin-bottom: 24px;
     }
-    @keyframes spinShowroom {
-        0% { transform: perspective(900px) rotateY(-18deg) scale(1.0); }
-        50% { transform: perspective(900px) rotateY(18deg) scale(1.08); }
-        100% { transform: perspective(900px) rotateY(-18deg) scale(1.0); }
+    
+    @keyframes spin3d {
+        0% { transform: perspective(900px) rotateY(-15deg) scale(1.0); }
+        50% { transform: perspective(900px) rotateY(15deg) scale(1.06); }
+        100% { transform: perspective(900px) rotateY(-15deg) scale(1.0); }
     }
-    .spin-vehicle-img { width: 250px; height: 170px; object-fit: contain; animation: spinShowroom 6s infinite ease-in-out; }
-    div[data-testid="stPopover"] { position: fixed; bottom: 24px; right: 24px; z-index: 99999; }
-    div[data-testid="stPopover"] > button {
-        background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%) !important;
-        color: #ffffff !important;
-        border-radius: 50px !important;
-        padding: 14px 26px !important;
-        font-weight: 700 !important;
-        border: 2px solid #ffffff !important;
+    .showcase-3d-img {
+        width: 100%;
+        max-height: 240px;
+        object-fit: contain;
+        border-radius: 14px;
+        background: radial-gradient(circle, #ffffff 20%, #cbd5e1 100%);
+        padding: 15px;
+        animation: spin3d 6s infinite ease-in-out;
+        box-shadow: 0 15px 35px rgba(16, 185, 129, 0.35);
+    }
+    
+    .card-img-box {
+        width: 100%;
+        height: 165px;
+        object-fit: contain;
+        background: radial-gradient(circle, #ffffff 25%, #e2e8f0 100%);
+        border-radius: 12px;
+        padding: 10px;
+        margin-bottom: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. NAVBAR & HERO
-st.markdown("""
-<div class="pro-navbar">
-    <div class="pro-brand">🚘 PakDrive AI | ULTRA-PRO 3D SHOWROOM</div>
-    <div style="font-size:13px; font-weight:600;">Cycle to Helicopter • Live Market API • Punjab E-Bike Scheme</div>
-</div>
-<div class="pro-hero">
-    <h1 style="font-size:38px; font-weight:800; margin-bottom:10px;">NEXT-GEN 3D VEHICLE & SCHEME ADVISOR</h1>
-    <p style="font-size:16px; color:#d1fae5 !important;">Cycle se lekar Helicopter tak — Apna budget darj karein aur dekhein 3D Showroom, Taza Rates, aur Maryam Nawaz E-Bike Scheme.</p>
+# ==========================================
+# 3. LIVE MARKET SEARCH FUNCTION
+# ==========================================
+@st.cache_data(ttl=1800)
+def live_market_search(query):
+    try:
+        with DDGS() as ddgs:
+            return list(ddgs.text(query, max_results=3))
+    except Exception:
+        return []
+
+# ==========================================
+# 4. SIDEBAR AI CHATBOT (ALWAYS VISIBLE ON SIDE!)
+# ==========================================
+st.sidebar.markdown("""
+<div style="background:linear-gradient(135deg,#6d28d9,#8b5cf6); padding:16px; border-radius:14px; text-align:center; margin-bottom:15px;">
+    <div style="font-size:12px; color:#a7f3d0; font-weight:700;">🟢 Online • 24/7 AI Concierge</div>
+    <h3 style="color:#ffffff; margin:4px 0;">PakDrive AI Chatbot</h3>
+    <p style="color:#ede9fe; font-size:12px; margin:0;">Koi bhi sawal poochein (Bikes, Cars, Punjab Scheme, Helicopter)</p>
 </div>
 """, unsafe_allow_html=True)
 
-# 4. INPUT CONTROLS
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        dict(role="assistant", content="Assalam-o-Alaikum! Main PakDrive AI hoon. Mujh se kisi bhi vehicle ka rate, Electric vs Petrol farq, ya Maryam Nawaz Punjab E-Bike Scheme ke baray mein poochein.")
+    ]
+
+for msg in st.session_state.messages:
+    st.sidebar.chat_message(msg["role"]).write(msg["content"])
+
+with st.sidebar.form(key="side_chat_form", clear_on_submit=True):
+    user_query = st.text_input("Apna sawal yahan likhein...", placeholder="e.g. Punjab E-Bike scheme ki shartain?")
+    send_btn = st.form_submit_button("Send Message 🚀", use_container_width=True)
+
+if send_btn and user_query:
+    st.session_state.messages.append(dict(role="user", content=user_query))
+    q_low = user_query.lower()
+    if "scheme" in q_low or "maryam" in q_low or "punjab" in q_low:
+        bot_reply = "🏛️ **Maryam Nawaz Punjab E-Bike Scheme:** Punjab ke students aur workers ko **Jolta JE-70L, Yadea, aur Honda CD 70** bina sood (0% markup) ke 2 saal ki asaan aqsaat par di ja rahi hain. Apply karne ke liye `bikes.punjab.gov.pk` visit karein."
+    elif "helicopter" in q_low:
+        bot_reply = "🚁 **Helicopter Guide:** Robinson R44 helicopter ki qeemat taqreeban Rs. 14.5 Crore hai. Pakistan mein isay uranay ke liye CAA license aur helipad clearance zaroori hai."
+    else:
+        web_hits = live_market_search(f"{user_query} Pakistan price PakWheels")
+        if len(web_hits) > 0:
+            top_hit = next(iter(web_hits))
+            bot_reply = f"🔎 **Taza Market Update:** {top_hit.get('body', '')}\n\n🔗 [Website Dekhein]({top_hit.get('href', 'https://pakwheels.com')})"
+        else:
+            bot_reply = "Right side par apna exact budget (PKR) darj karein, main foran us range ki saari 3D vehicles aur buying links dikha dunga!"
+    st.session_state.messages.append(dict(role="assistant", content=bot_reply))
+    st.rerun()
+
+# ==========================================
+# 5. MAIN LUXURY SHOWROOM HERO BANNER
+# ==========================================
+st.markdown("""
+<div class="pro-hero">
+    <h1 style="font-size:36px; font-weight:800; margin-bottom:8px;">🚘 PAKDRIVE AI — NEXT-GEN 3D VEHICLE SHOWROOM</h1>
+    <p style="font-size:15px; color:#d1fae5 !important;">
+        Cycle se lekar Helicopter tak • Live PakWheels & Market Links • Electric vs Petrol Comparison • Maryam Nawaz Punjab E-Bike Scheme
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 6. USER BUDGET & PREFERENCE CONTROLS
+# ==========================================
 st.markdown("### 🎛️ Apna Budget Aur Zaroorat Select Karein")
 c1, c2, c3, c4 = st.columns(4)
-budget = c1.number_input("Aapka Budget (PKR)", min_value=15000, max_value=1500000000, value=160000, step=10000)
-daily_km = c2.slider("Rozana ka Safar (KM)", min_value=2, max_value=500, value=35)
+budget = c1.number_input("Aapka Budget (PKR)", min_value=15000, max_value=1500000000, value=170000, step=10000)
+daily_km = c2.slider("Rozana ka Safar (KM)", min_value=2, max_value=500, value=40)
 fuel_pref = c3.selectbox("Fuel / Power Type", ["Any (Show Best in Budget)", "Electric", "Petrol", "Manual", "Diesel", "Aviation Fuel"])
 usage_type = c4.selectbox("Istemaal (Purpose)", ["Personal", "Family", "Commercial", "Luxury/Offroad", "Marine/Leisure", "Aviation"])
 
-# 5. LOAD MASTER DATA FROM CSV
+# ==========================================
+# 7. LOAD & ENRICH DATASET FROM CSV
+# ==========================================
 df_raw = pd.read_csv("vehicles_3d_master.csv").drop_duplicates(subset=["Model_Name"]).copy()
 
 cats = ["1_Bicycle", "2_Electric_Cycle", "3_Electric_Bike", "4_Petrol_Bike", "5_Three_Wheeler", "6_Car_Sedan_Hatchback", "7_Electric_Car", "8_SUV_4x4", "9_Van_Bus", "10_Heavy_Truck", "11_Boat_Yacht", "12_Helicopter_Aircraft"]
@@ -130,16 +167,16 @@ imgs = [
     "https://wikimedia.org"
 ]
 urls = [
-    "https://pakwheels.com",
+    "https://pakwheels.com/bikes/bicycles",
     "https://olx.com.pk",
-    "https://pakwheels.com",
-    "https://pakwheels.com",
-    "https://pakwheels.com",
-    "https://pakwheels.com",
-    "https://pakwheels.com",
-    "https://pakwheels.com",
-    "https://pakwheels.com",
-    "https://pakwheels.com",
+    "https://pakwheels.com/bikes/electric-bikes/",
+    "https://pakwheels.com/bikes/honda/cd-70/",
+    "https://pakwheels.com/used-cars/search/-/mk_sazgar/",
+    "https://pakwheels.com/new-cars/suzuki/alto/",
+    "https://pakwheels.com/new-cars/byd/atto-3/",
+    "https://pakwheels.com/new-cars/toyota/fortuner/",
+    "https://pakwheels.com/used-cars/toyota-coaster/2556",
+    "https://pakwheels.com/used-cars/search/-/ct_truck/",
     "https://olx.com.pk",
     "https://controller.com"
 ]
@@ -147,7 +184,9 @@ urls = [
 df_raw["HD_Img"] = df_raw["Category"].map(dict(zip(cats, imgs)))
 df_raw["Market_URL"] = df_raw["Category"].map(dict(zip(cats, urls)))
 
-# 6. AI PREDICTION
+# ==========================================
+# 8. HYBRID AI PREDICTION BANNER
+# ==========================================
 if budget < 80000:
     pred_label, pred_conf = "Bicycle", 98.5
 elif budget < 250000:
@@ -159,35 +198,3 @@ elif budget < 5000000:
 elif budget < 35000000:
     pred_label, pred_conf = "Electric SUV / Luxury 4x4", 98.4
 else:
-    pred_label, pred_conf = "Executive Helicopter / Aircraft", 99.5
-
-st.success(f"🧠 **Hybrid AI Recommendation:** `{pred_label}`  |  🎯 **Model Confidence:** `{pred_conf:.1f}%`  |  📊 **Kaggle Multi-Spectrum Model Active**")
-
-# 7. BUDGET FILTER
-if fuel_pref != "Any (Show Best in Budget)":
-    sub_df = df_raw[df_raw["Fuel_Type"] == fuel_pref].copy()
-    if sub_df.empty:
-        sub_df = df_raw.copy()
-else:
-    sub_df = df_raw.copy()
-
-sub_df["Price_Diff"] = abs(sub_df["Price_PKR"] - budget)
-matched = sub_df.sort_values("Price_Diff").head(4).to_dict("records")
-
-# 8. 3D SHOWROOM CARDS (SINGLE-LINE HTML - NO MULTILINE PARENTHESIS!)
-st.markdown(f"### 🏆 Aapke Budget (Rs. {budget:,}) Ki Range Mein Best 3D Vehicles")
-cols = st.columns(len(matched))
-
-for i, item in enumerate(matched):
-    is_scheme = "Yes" in str(item["Govt_Scheme"])
-    if is_scheme:
-        badge_html = f'<div style="background:#065f46; color:#34d399; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; display:inline-block;">🏛️ {item["Govt_Scheme"]}</div>'
-    else:
-        badge_html = '<div style="background:#334155; color:#cbd5e1; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; display:inline-block;">Verified Market Rate</div>'
-    price_txt = f"{int(item['Price_PKR']):,}"
-    img_s = str(item["HD_Img"])
-    name_s = str(item["Model_Name"])
-    fuel_s = str(item["Fuel_Type"])
-    rng_s = str(item["Max_Range_KM"])
-    run_s = str(item["Running_Cost_Per_100km"])
-    url_s = str(item["Market_URL"])
