@@ -5,5 +5,5 @@ scikit-learn
 xgboost
 tensorflow
 joblib
-google-genai
+duckduckgo-search
 requests
