@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 from duckduckgo_search import DDGS
 
 # ==========================================
-# PAGE CONFIGURATION (FORCED LIGHT WEBSITE THEME)
+# PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(
     page_title="PakDrive AI | 3D Vehicle & Punjab Scheme Advisor",
@@ -152,7 +152,6 @@ def load_assets():
     le_fuel = joblib.load("le_fuel.pkl")
     le_usage = joblib.load("le_usage.pkl")
     le_target = joblib.load("le_target.pkl")
-    
     xgb_model = XGBClassifier()
     xgb_model.load_model("xgb_vehicle_model.json")
     dl_model = load_model("dl_vehicle_model.h5", compile=False)
@@ -199,10 +198,10 @@ with c3:
 with c4:
     usage_type = st.selectbox("Istemaal (Purpose)", ["Personal", "Family", "Commercial", "Luxury/Offroad", "Marine/Leisure", "Aviation"])
 
-predict_btn = st.button("🚀 Show 3D Vehicles, Rates & Comparison", use_container_width=True, type="primary")
+st.button("🚀 Show 3D Vehicles, Rates & Comparison", use_container_width=True, type="primary")
 
 # ==========================================
-# RESULTS & 3D VEHICLE CARDS
+# ML & DL PREDICTION
 # ==========================================
 selected_fuel = "Electric" if fuel_pref == "Any (Show All)" else fuel_pref
 if selected_fuel not in le_fuel.classes_:
@@ -227,7 +226,9 @@ xgb_category = str(le_target.inverse_transform([xgb_pred_idx])).split('_', 1)[-1
 
 st.success(f"🧠 **Deep Learning Prediction:** `{predicted_category}` (Confidence: **{dl_confidence:.1f}%**)  |  🚀 **XGBoost ML Prediction:** `{xgb_category}`")
 
-# Filter Vehicles
+# ==========================================
+# FILTER & DISPLAY 3D VEHICLE CARDS
+# ==========================================
 unique_vehicles = df.drop_duplicates(subset=["Model_Name"]).copy()
 if fuel_pref != "Any (Show All)":
     filtered = unique_vehicles[unique_vehicles["Fuel_Type"] == fuel_pref].copy()
@@ -239,7 +240,6 @@ else:
 filtered["Price_Diff"] = abs(filtered["Price_PKR"] - budget)
 matched_df = filtered.sort_values("Price_Diff").head(4)
 
-# Display 3D Vehicle Cards (Zero SyntaxError List Join Method)
 st.markdown("### 🏆 Aapke Budget Ke Mutabiq 3D Vehicles & Latest Rates")
 cols = st.columns(len(matched_df))
 
@@ -268,9 +268,8 @@ for idx, (_, row) in enumerate(matched_df.iterrows()):
         ]
         st.markdown("".join(html_parts), unsafe_allow_html=True)
 
-# Live Market Rates & Punjab Scheme Auto-Fetcher
+# ==========================================
+# LIVE PAKWHEELS & PUNJAB SCHEME UPDATES
+# ==========================================
 st.markdown("### 🌐 Live PakWheels & Punjab Govt E-Bike Scheme Updates")
-top_vehicle = matched_df.iloc["Model_Name"]
-live_results = get_live_market_rates(f"{top_vehicle} price in Pakistan 2026 PakWheels Punjab E-Bike scheme")
-
-if live_results:
+top_vehicle = str(matched_df.iloc["Model_Name"])
