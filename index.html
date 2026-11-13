@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PakDrive AI | Ultra-Pro 3D Vehicle & Punjab Scheme Showroom</title>
+  <script src="https://tailwindcss.com"></script>
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at top, #0f172a 0%, #030712 100%);
+      color: #f8fafc;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .studio-pedestal {
+      background: radial-gradient(circle, #ffffff 15%, #cbd5e1 100%);
+      box-shadow: inset 0 -10px 20px rgba(0,0,0,0.15);
+    }
+    @keyframes spin3d {
+      0% { transform: perspective(900px) rotateY(-16deg) scale(1.0); }
+      50% { transform: perspective(900px) rotateY(16deg) scale(1.07); }
+      100% { transform: perspective(900px) rotateY(-16deg) scale(1.0); }
+    }
+    .spin-3d {
+      animation: spin3d 6s infinite ease-in-out;
+      filter: drop-shadow(0 20px 25px rgba(16, 185, 129, 0.4));
+    }
+    .hover-3d {
+      transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .hover-3d:hover {
+      transform: translateY(-10px) scale(1.02);
+      border-color: #10b981;
+      box-shadow: 0 20px 45px rgba(16, 185, 129, 0.25);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-24">
+
+  <!-- TOP NAVBAR -->
+  <nav class="max-w-7xl mx-auto px-4 pt-5">
+    <div class="glass-card rounded-2xl px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🚘</span>
+        <div>
+          <h1 class="text-2xl font-extrabold bg-gradient-to-r from-emerald-400 to-amber-300 bg-clip-text text-transparent">PakDrive AI</h1>
+          <p class="text-xs text-slate-400">Ultra-Pro 3D Showroom & Scheme Advisor</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-full font-semibold">
+          Cycle to Helicopter • ML + DL Live
+        </span>
+        <button onclick="toggleApiModal()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-1.5 rounded-lg font-semibold">
+          🔑 API Keys
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- API KEYS MODAL -->
+  <div id="apiModal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-emerald-500/50 rounded-2xl p-6 max-w-md w-full">
+      <h3 class="text-lg font-bold text-white mb-2">🔑 Live API Keys (Optional)</h3>
+      <p class="text-xs text-slate-400 mb-4">Real-time PakWheels rates aur Gemini AI chatbot ke liye apni free keys darj karein:</p>
+      <label class="block text-xs font-semibold text-slate-300 mb-1">Google Gemini API Key (://google.com)</label>
+      <input id="geminiKey" type="password" placeholder="AIzaSy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white mb-3">
+      <label class="block text-xs font-semibold text-slate-300 mb-1">Serper.dev Search API Key (serper.dev)</label>
+      <input id="serperKey" type="password" placeholder="Your Serper API Key..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white mb-4">
+      <div class="flex justify-end gap-2">
+        <button onclick="toggleApiModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm font-bold">Save & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO BANNER -->
+  <header class="max-w-7xl mx-auto px-4 mt-6">
+    <div class="rounded-3xl p-8 md:p-12 text-center border border-emerald-500/40 shadow-2xl" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 55%, #1e1b4b 100%);">
+      <span class="inline-block bg-emerald-400/20 text-emerald-300 text-xs font-bold px-4 py-1.5 rounded-full mb-3 border border-emerald-400/30">
+        PAKISTAN'S FIRST HYBRID ML + DL VEHICLE & GOVT SCHEME PLATFORM
+      </span>
+      <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+        Discover Your Perfect Ride — Cycle to Helicopter
+      </h2>
+      <p class="text-slate-200 max-w-3xl mx-auto text-sm md:text-base">
+        Apna budget darj karein — Hamara <b>Deep Learning Neural Network</b> aur <b>XGBoost ML Model</b> aapko behtareen sawari, 3D Showroom Tour, Electric vs Petrol Advantages/Disadvantages, aur <b>Maryam Nawaz Punjab E-Bike Scheme</b> ki tafseel dikhayega.
+      </p>
+    </div>
+  </header>
+
+  <!-- BUDGET & FILTER CONTROLS -->
+  <section class="max-w-7xl mx-auto px-4 mt-8">
+    <div class="glass-card rounded-2xl p-6">
+      <h3 class="text-lg font-bold mb-4 text-emerald-400">🎛️ Apna Budget Aur Zaroorat Select Karein</h3>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Aapka Budget (PKR)</label>
+          <input id="budgetInput" type="number" value="170000" min="15000" max="1500000000" step="10000" oninput="updateShowroom()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-bold focus:border-emerald-400 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Rozana ka Safar: <span id="kmLabel" class="text-emerald-400 font-bold">35 KM</span></label>
+          <input id="kmInput" type="range" min="2" max="500" value="35" oninput="document.getElementById('kmLabel').innerText=this.value+' KM'; updateShowroom()" class="w-full mt-2 accent-emerald-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Fuel / Power Type</label>
+          <select id="fuelInput" onchange="updateShowroom()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold outline-none">
+            <option value="Any">Any (Show Best in Budget)</option>
+            <option value="Electric">Electric (EV)</option>
+            <option value="Petrol">Petrol</option>
+            <option value="Manual">Manual (Cycle)</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Aviation Fuel">Aviation Fuel</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Istemaal (Purpose)</label>
+          <select id="usageInput" onchange="updateShowroom()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold outline-none">
+            <option value="Personal">Personal / Student</option>
+            <option value="Family">Family</option>
+            <option value="Commercial">Commercial / Cargo</option>
+            <option value="Luxury/Offroad">Luxury / Offroad</option>
+            <option value="Marine/Leisure">Marine / Leisure</option>
+            <option value="Aviation">Aviation</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- AI MODEL PREDICTION BANNER -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-slate-900/90 border border-emerald-500/40 rounded-xl p-4">
+          <div class="text-xs text-slate-400 font-semibold">🧠 Deep Learning Neural Network</div>
+          <div id="dlPredText" class="text-xl font-extrabold text-emerald-400 mt-1">Electric Bike</div>
+          <div id="dlConfText" class="text-xs text-emerald-300 mt-1">Confidence: 99.2% (Hugging Face API)</div>
+        </div>
+        <div class="bg-slate-900/90 border border-indigo-500/40 rounded-xl p-4">
+          <div class="text-xs text-slate-400 font-semibold">🚀 XGBoost Machine Learning</div>
+          <div id="xgbPredText" class="text-xl font-extrabold text-indigo-400 mt-1">Electric Bike</div>
+          <div id="xgbConfText" class="text-xs text-indigo-300 mt-1">Confidence: 98.9% (Kaggle Trained)</div>
+        </div>
+        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl p-4">
+          <div class="text-xs text-slate-400 font-semibold">🏛️ Government Scheme Status</div>
+          <div id="schemeText" class="text-lg font-extrabold text-amber-300 mt-1">Maryam Nawaz E-Bike Eligible</div>
+          <div class="text-xs text-slate-300 mt-1">0% Markup Installments Available</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3D VEHICLE CARDS GRID -->
+  <section class="max-w-7xl mx-auto px-4 mt-8">
+    <h3 class="text-2xl font-extrabold mb-4">🏆 Aapke Budget Ki Range Mein Best 3D Vehicles</h3>
+    <div id="cardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+  </section>
+
+  <!-- 30-SEC 3D SHOWCASE + ADVANTAGES & DISADVANTAGES -->
+  <section class="max-w-7xl mx-auto px-4 mt-10">
+    <h3 class="text-2xl font-extrabold mb-4">🎬 30-Second 3D Studio Showcase & Advantages / Disadvantages</h3>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-card rounded-2xl p-6 text-center">
+        <span class="text-xs font-bold text-emerald-400 tracking-widest">● 30-SEC 3D STUDIO 360° SHOWCASE</span>
+        <div class="studio-pedestal rounded-2xl p-6 my-4 flex justify-center items-center">
+          <img id="showcaseImg" src="" class="h-48 object-contain spin-3d" alt="3D Vehicle">
+        </div>
+        <h4 id="showcaseTitle" class="text-xl font-extrabold text-white mb-3"></h4>
+        <video class="w-full rounded-xl border border-slate-700" controls loop muted>
+          <source src="https://googleapis.com" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="space-y-4">
